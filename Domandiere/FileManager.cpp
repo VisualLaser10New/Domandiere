@@ -27,7 +27,10 @@ vector<Quesito> FileManager::LetturaDomandiere(string pathFileDomande, string pa
 
 	ifstream lettura(pathFileDomande);
 	if (!lettura)
-		exit(1);
+	{
+		output.clear();
+		return output;
+	}
 	
 	string domanda, risposta;
 	int id = 0;
