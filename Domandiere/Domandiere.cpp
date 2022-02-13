@@ -34,7 +34,7 @@ void pc()
 void info()
 {
 	cout << "Copyright \xB8 Visual Laser 10 New\n" <<
-		"Other products https://sites.google.com/view/visuallaser10/download-prodotti" << 
+		"Other products https://sites.google.com/view/visuallaser10/download-prodotti" <<
 		endl;
 	pc();
 
@@ -50,9 +50,12 @@ void show(bool scoreToo = false)
 	cout << "\n=======================================" << endl;
 	for (vector<Quesito>::iterator t = a.begin(); t != a.end(); t++)
 	{
-		cout << "Question no. " << (int)(t)->ID() << ":\n" <<
-			"\t" << t->Domanda() << "\n" <<
-			"\tAnswer: " << t->Risposta() << "\n" << endl;
+		cout << "Question no. " << (int)(t)->ID() << ":\n" << //print question
+			"\t" << t->Domanda() << "\n";
+
+		for(auto risp : t->Risposte())
+			cout << "\tAnswer: " << risp << endl; //print answers
+
 		if (scoreToo)
 		{
 			//print score too
@@ -64,42 +67,70 @@ void show(bool scoreToo = false)
 	}
 }
 
-vector<int> replies(int correct, int &wherePutCorrect)
+vector<string> replies(int IDofQuestion, int& wherePutCorrect)
 {
 	//max 4 answers
-	vector<int> output;
+	vector<string> output;
 	while (output.size() < maxAnswers)
 	{
 		int n = 0;
 		do {
 			n = rand() % a.size();
-		} while (n == correct || find(output.begin(), output.end(), n) != output.end());
+		} while (n == IDofQuestion || find(output.begin(), output.end(), a[n].Risposte()[0]) != output.end());
 		//if the extracted number is already extracted || is equal to correct -> restract
 
-		output.push_back(n);
+		output.push_back(a[n].Risposte()[0]);//insert the casual answer
 	}
 
 	wherePutCorrect = rand() % maxAnswers;
-	output[wherePutCorrect] = correct; //in one of them put the correct answer
+	output[wherePutCorrect] = a[IDofQuestion].Risposte()[0]; //in one of them put the correct answer
 
 	return output;
 }
 
-int chiediRisposta()
+vector<string> replies(int IDofQuestion, int IDofCorrect, int& wherePutCorrect)
+{
+	//if is a multiple ansers' question
+	vector<string> output;
+	int answerToSet = a[IDofQuestion].Risposte().size(); //number of answer
+
+	output.resize(answerToSet); //allocate the vector
+
+	for (int i = 0; i < a[IDofQuestion].Risposte().size(); i++) //foreach answer, put it in a random empty place in vector
+	{
+		int e = 0;
+		do {
+			e = rand() % answerToSet;
+		} while (!output[e].empty());
+		output[e] = a[IDofQuestion].Risposte()[i];
+
+		if (i == IDofCorrect)
+			wherePutCorrect = i;
+	}
+	return output;
+}
+
+int chiediRisposta(int nOfAnswers)
 {
 	//return a number from 1 to 4, that point to the user input
 	char repl;
 
 	do {
 		repl = '\0';
-		cout << "Select A, B, C or D: ";
+
+		cout << "Select ";
+		for (int i = 0; i < nOfAnswers; i++) {
+			cout <<(char)('A' + i) << ", "; //print Select A, B, C, ...
+		}
+		cout << ": ";
+
 		cin >> repl;
 		cin.clear();
 		//cin.ignore('\n', 80);
 
 		repl = toupper(repl);
 
-	} while (string("ABCD").find(repl) == -1);
+	} while (repl < 'A' || repl > (char)('A' + nOfAnswers));
 
 	return (int)(repl - 65);
 }
@@ -112,31 +143,40 @@ void domandiere()
 	vector<int> asked = { -1 }; //-1, otherwise the 0 question never comes out
 	srand(time(NULL));
 
-	while(asked.size() <= maxQuests) //can ask max 10 quests
+	while (asked.size() <= maxQuests) //can ask max 10 quests
 	{
 		int random = rand() % (a.size()); // get an ID random quest
-		if (find(asked.begin(), asked.end(), random) == asked.end())
+		if (find(asked.begin(), asked.end(), random) == asked.end())//if the question isn't already asked, ask it
 		{
-			//if the question isn't already asked, ask it
 			asked.push_back(random);
-			
+
 			//ask the question
 			int wherePutCorrect = 0; //where the answer randomize put the correct one, int from 1 to 4
-			vector <int> answerPos = replies(a[asked.back()].ID(), wherePutCorrect);//random 4 aswers, where one of them is correct
+			vector <string> answersToAsk;
 
+			if (a[asked.back()].Risposte().size() == 1)
+			{
+				//if is a one answer's question
+				answersToAsk = replies(a[asked.back()].ID(), wherePutCorrect);//random 4 aswers, where one of them is correct
+			}
+			else
+			{
+				//if is a multiple answers' question
+				answersToAsk = replies(a[asked.back()].ID(), 0, wherePutCorrect);
+			}
 
-			cout << "\n=======================================\nQuestion no. " << asked.size() -1 << ":\n\n" << a[asked.back()].Domanda(); //write the question
+			cout << "\n=======================================\nQuestion no. " << asked.size() - 1 << ":\n\n" << a[asked.back()].Domanda(); //write the question
 
 			char letter = 'A'; //letter -> A] B] C] D]
-			for (auto i : answerPos)
+			for (auto i : answersToAsk)
 			{
-				cout << "\n" << letter++ << "] " << a[i].Risposta(); //write the answers, i is the question ID
+				cout << "\n" << letter++ << "] " << i; //write the answers, i is the answer <string>
 			}
 			cout << "\n" << endl;
 
-			//answer
+			//answers
 			a[asked.back()].score.nProposte++; //increase the number of proposal
-			if (chiediRisposta() == wherePutCorrect) //ask the answer
+			if (chiediRisposta(answersToAsk.size()) == wherePutCorrect) //ask the answer
 			{
 				cout << "\nCorrect" << endl;
 			}
@@ -182,11 +222,11 @@ char menu()
 		"6) Exit\n" <<
 		"7) Reset Scores" << endl;
 
-	
+
 	cin >> response;
 	cin.clear();
 	cin.ignore(80, '\n');
-	
+
 
 	switch (response)
 	{
@@ -201,7 +241,7 @@ char menu()
 	case '3':
 		show(true);
 		break;
-		
+
 	case '7':
 		remove(pathScores.c_str()); //delete score file
 	case '4':
@@ -212,7 +252,7 @@ char menu()
 		info();
 		break;
 
-	
+
 	default:
 		cout << "Not valid, retry" << endl;
 		break;
@@ -220,7 +260,7 @@ char menu()
 	pc();
 
 	return response - 48;
-		
+
 }
 
 bool valid()
@@ -228,7 +268,7 @@ bool valid()
 	if (a.size() < 11)
 		return false;
 
-	if (a.back().Risposta() == "")
+	if (a.back().Risposte().size() == 0)
 		return false;
 
 	return true;
@@ -244,6 +284,7 @@ int main()
 		if (!valid()) //check if domandiere.dmt is valid file
 		{
 			cout << "The file is not valid, check if there are\nat least 11 questions with 11 answer in domandiere.dmt" << endl;
+			pc();
 			return 1;
 		}
 

@@ -1,6 +1,24 @@
 #include "FileManager.h"
 using namespace std;
 
+vector<string> split(string input, char at, int maxElement)
+{
+	vector<string> output;
+	int end = 0, count = 0;
+
+	while (end < input.size() && count < maxElement)
+	{
+		end = input.find(at, sizeof(char)); //get the first part of text where to split
+		end = (end < 0) ? input.size() : end; //if string not contains the separator, get the full text as one element
+
+		output.push_back(input.substr(0, end));
+		input.erase(0, end+1);
+		count++;
+		end = 0;
+	}
+	return output;
+}
+
 vector<Quesito> FileManager::LetturaDomandiere(string pathFileDomande, string pathFilePunteggi)
 {
 	//read text file where are the question and answer
@@ -16,7 +34,8 @@ vector<Quesito> FileManager::LetturaDomandiere(string pathFileDomande, string pa
 	while (getline(lettura, domanda) && getline(lettura, risposta))
 	{
 		//read and fill the vector<Quesito>
-		output.push_back(Quesito(domanda, risposta, id, LetturaPunteggi(pathFilePunteggi, id)));
+		vector<string> risposte = split(risposta, '§', 20); //split in case of multiple answer
+		output.push_back(Quesito(domanda, risposte, id, LetturaPunteggi(pathFilePunteggi, id)));
 		id++;
 	}
 	lettura.close();

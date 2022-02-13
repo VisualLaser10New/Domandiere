@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 struct Score
@@ -13,15 +14,15 @@ class Quesito
 {
 private:
 	string _domanda;
-	string _risposta;
+	vector<string> _risposte;
 	int _id;
 
 public:
-	Quesito(string domanda, string risposta, int id, Score punteggi);	
+	Quesito(string domanda, vector<string> risposte, int id, Score punteggi);	
 
 	//readable variables
 	string Domanda() const { return _domanda; }
-	string Risposta() const { return _risposta; }
+	vector<string> Risposte() const { return _risposte; }
 	int ID() const { return _id; }
 
 	Score score;
