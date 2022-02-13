@@ -1,3 +1,0 @@
-﻿  Domandiere.cpp
-C:\Users\Visual Laser 10 New\source\repos\Domandiere\Domandiere.cpp(113,12): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  Domandiere.vcxproj -> C:\Users\Visual Laser 10 New\source\repos\Domandiere\x64\Debug\Domandiere.exe
